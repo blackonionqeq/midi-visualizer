@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
+  import * as Tone from 'tone'
   import { parseMidi, type ParsedMidi } from './lib/midi/loader'
   import { loadPiano, setMasterGain } from './lib/audio/sampler'
   import * as transport from './lib/audio/transport'
@@ -59,7 +60,21 @@
       rafPos = requestAnimationFrame(tick)
     }
     rafPos = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafPos)
+
+    // iOS Safari suspends the AudioContext when the tab is backgrounded; proactively
+    // resume on return so the next Play lands on a running context.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') {
+        const ctx = Tone.getContext()
+        if (ctx.state !== 'running') ctx.resume().catch(() => {})
+      }
+    }
+    document.addEventListener('visibilitychange', onVisible)
+
+    return () => {
+      cancelAnimationFrame(rafPos)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   })
 
   async function handleFile(e: Event) {

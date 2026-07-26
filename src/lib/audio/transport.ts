@@ -63,6 +63,14 @@ export function seek(originalSeconds: number): void {
 
 export async function play(): Promise<void> {
   await Tone.start() // unlock the autoplay restriction
+  // iOS Safari suspends/interrupts the AudioContext when the tab is backgrounded.
+  // Transport.seconds only advances while the context is "running", so make sure
+  // it actually is before starting the Transport — otherwise start() anchors to a
+  // frozen clock and nothing moves even though the button flips to "playing".
+  const ctx = Tone.getContext()
+  if (ctx.state !== 'running') {
+    await ctx.resume()
+  }
   Tone.Transport.start()
 }
 

@@ -5,6 +5,7 @@
   import { loadPiano, setMasterGain } from './lib/audio/sampler'
   import * as transport from './lib/audio/transport'
   import Visualizer from './components/Visualizer.svelte'
+  import MeasureMinimap from './components/MeasureMinimap.svelte'
   import { loadLastMidi, saveLastMidi } from './lib/storage'
 
   let fileName = $state<string | null>(null)
@@ -130,6 +131,15 @@
     volume = +(e.currentTarget as HTMLInputElement).value
     setMasterGain(volume)
   }
+
+  // Minimap seek shares the same dragging/position state as the seek bar, so the rAF
+  // tick stops overwriting position while the user drags the minimap.
+  const onMinimapSeekStart = () => (dragging = true)
+  const onMinimapSeek = (sec: number) => {
+    position = sec
+    transport.seek(sec)
+  }
+  const onMinimapSeekEnd = () => (dragging = false)
 </script>
 
 <main class="app">
@@ -195,6 +205,20 @@
       </div>
     {/if}
   </header>
+
+  {#if parsed}
+    <div class="minimap-bar">
+      <MeasureMinimap
+        measures={parsed.measures}
+        duration={parsed.duration}
+        {position}
+        hasTimeSignature={parsed.hasTimeSignature}
+        onseekstart={onMinimapSeekStart}
+        onseek={onMinimapSeek}
+        onseekend={onMinimapSeekEnd}
+      />
+    </div>
+  {/if}
 
   <section class="viz-area">
     {#if parsed}
@@ -342,6 +366,11 @@
   }
   input[type='range'] {
     accent-color: #646cff;
+  }
+  .minimap-bar {
+    height: 30px;
+    background: #161b22;
+    border-bottom: 1px solid #2a2a2a;
   }
   .viz-area {
     flex: 1;

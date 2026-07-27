@@ -28,7 +28,7 @@ export type ParsedMidi = {
 
 // Defensive: real-world MIDI files occasionally carry malformed time signatures
 // ([4], [0,4], non-power-of-2 denominators, etc.). Normalize to a usable [num, den].
-function normalizeTimeSignature(ts: number[] | undefined): [number, number] {
+export function normalizeTimeSignature(ts: number[] | undefined): [number, number] {
   if (
     !Array.isArray(ts) ||
     ts.length < 2 ||
@@ -55,7 +55,7 @@ type TSEvent = { ticks: number; num: number; den: number }
 // One measure = ppq * 4 * num / den ticks (1 whole note = ppq*4 ticks; each measure
 // holds `num` notes of 1/den value = num*(4/den) quarter notes). The global index stays
 // continuous across time-signature changes, so a change always lands on a measure start.
-function buildMeasures(
+export function buildMeasures(
   header: Midi['header'],
   durationSeconds: number,
   notes: ParsedNote[],
@@ -135,7 +135,7 @@ function buildMeasures(
 
 // Count notes per measure bin (notes are pre-sorted by `time` ascending), then
 // normalize with sqrt so sparse bars stay visible alongside dense ones.
-function computeDensity(measures: Measure[], notes: ParsedNote[]): void {
+export function computeDensity(measures: Measure[], notes: ParsedNote[]): void {
   const binCount = measures.length - 1 // exclude sentinel
   if (binCount <= 0) return
   const counts = new Array<number>(binCount).fill(0)

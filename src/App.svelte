@@ -238,6 +238,7 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    height: 100svh;
     background: #0d1117;
     color: #e6e6e6;
     font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
